@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mysql-init-job
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: init-db
+          image: mysql:8.0
+          env:
+            - name: MYSQL_PWD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: DB_PASSWORD
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for MySQL..."
+              until mysql -h mysql-service -u root -e "SELECT 1"; do
+                sleep 5
+              done
+              echo "Running init.sql"
+              mysql -h mysql-service -u root bookstore < /sql/init.sql
+          volumeMounts:
+            - name: sql-volume
+              mountPath: /sql
+      volumes:
+        - name: sql-volume
+          configMap:
+            name: mysql-init-sql
