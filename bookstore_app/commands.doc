@@ -1,0 +1,3 @@
+kubectl exec -it minio -- sh
+mc alias set local http://localhost:9000 minioadmin minioadmin123
+mc anonymous set download local/book-images

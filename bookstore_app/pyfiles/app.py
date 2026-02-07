@@ -5,6 +5,9 @@ import socket
 
 app = Flask(__name__)
 
+MINIO_ENDPOINT = "http://localhost:9000"
+MINIO_BUCKET = "book-images"
+
 def get_db():
     return mysql.connector.connect(
         host="mysql-service",
@@ -52,7 +55,7 @@ def home():
     html = f"""
     <h2>Hi {pod_name}</h2>
     <form method="POST">
-    <table border="1" cellpadding="5" cellspacing="0">
+    <table border="1" cellpadding="6" cellspacing="0">
       <tr>
         <th>Select</th>
         <th>Index</th>
@@ -65,15 +68,17 @@ def home():
     """
 
     for book in books:
+        image_url = f"{MINIO_ENDPOINT}/{MINIO_BUCKET}/{book[3]}"
+        print(image_url)
         html += f"""
         <tr>
-          <td>
-            <input type="radio" name="book_id" value="{book[0]}" required>
-          </td>
+          <td><input type="radio" name="book_id" value="{book[0]}" required></td>
           <td>{book[0]}</td>
           <td>{book[1]}</td>
           <td>{book[2]}</td>
-          <td>{book[3]}</td>
+          <td>
+            <img src="{image_url}" width="80" height="120">
+          </td>
           <td>{book[4]}</td>
           <td>{book[5]}</td>
         </tr>
@@ -87,17 +92,16 @@ def home():
     """
 
     if selected:
+        selected_image = f"{MINIO_ENDPOINT}/{MINIO_BUCKET}/{selected[3]}"
+        print(f"selected_image:{selected_image}")
         html += f"""
         <hr>
         <h3>Selected Book</h3>
-        <ul>
-          <li><b>Index:</b> {selected[0]}</li>
-          <li><b>Name:</b> {selected[1]}</li>
-          <li><b>Author:</b> {selected[2]}</li>
-          <li><b>Image:</b> {selected[3]}</li>
-          <li><b>Copies:</b> {selected[4]}</li>
-          <li><b>Year:</b> {selected[5]}</li>
-        </ul>
+        <img src="{selected_image}" width="150"><br><br>
+        <b>Name:</b> {selected[1]}<br>
+        <b>Author:</b> {selected[2]}<br>
+        <b>Copies:</b> {selected[4]}<br>
+        <b>Year:</b> {selected[5]}<br>
         """
 
     cursor.close()
