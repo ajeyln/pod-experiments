@@ -1,0 +1,48 @@
+---
+# =========================
+# KEYCLOAK REALM IMPORT
+# =========================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keycloak-realm
+data:
+  realm-export.json: |
+    {
+      "realm": "bookstore",
+      "enabled": true,
+      "clients": [
+        {
+          "clientId": "book-store",
+          "enabled": true,
+          "protocol": "openid-connect",
+          "publicClient": false,
+          "secret": "bookstore-secret-123",
+          "redirectUris": [
+            "http://localhost:8081/*"
+          ],
+          "standardFlowEnabled": true,
+          "directAccessGrantsEnabled": true
+        }
+      ],
+      "roles": {
+        "realm": [
+          { "name": "admin" },
+          { "name": "user" }
+        ]
+      },
+      "users": [
+        {
+          "username": "testuser",
+          "enabled": true,
+          "credentials": [
+            {
+              "type": "password",
+              "value": "test123",
+              "temporary": false
+            }
+          ],
+          "realmRoles": ["user"]
+        }
+      ]
+    }

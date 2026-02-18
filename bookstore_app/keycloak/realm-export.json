@@ -1,0 +1,34 @@
+{
+  "realm": "bookstore",
+  "enabled": true,
+  "clients": [
+    {
+      "clientId": "book-store",
+      "secret": "zdUZvKHa5cNgvgkjTvYEE9VYGF7w3chB",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "redirectUris": ["http://localhost:30081/*"],
+      "webOrigins": ["http://localhost:30081"]
+
+    }
+  ],
+  "users": [
+    {
+      "username": "testuser",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "test123"
+        }
+      ]
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "user"
+      }
+    ]
+  }
+}

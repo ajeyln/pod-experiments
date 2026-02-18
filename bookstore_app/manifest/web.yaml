@@ -1,39 +1,83 @@
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: web-pod
-  labels:
-    app: web
+  name: web
+  namespace: bookstore
 spec:
-  containers:
-    - name: web
-      image: python:3.9-slim
-      command: ["sh","-c"]
-      args:
-        - pip install flask mysql-connector-python &&
-          python /app/app.py
-      env:
-        - name: DB_USER
-          valueFrom:
-            secretKeyRef:
-              name: db-secret
-              key: DB_USER
-        - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: db-secret
-              key: DB_PASSWORD
-        - name: DB_NAME
-          valueFrom:
-            secretKeyRef:
-              name: db-secret
-              key: DB_NAME
-      ports:
-        - containerPort: 5000
-      volumeMounts:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: web
+          image: python:3.9-slim
+          command: ["sh", "-c"]
+          args:
+            - |
+              pip install --no-cache-dir -r /app/requirements.txt && \
+              python /app/app.py
+          env:
+            # MySQL
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: DB_PASSWORD
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: DB_NAME
+
+            # MinIO
+            - name: MINIO_ENDPOINT
+              value: http://minio-service:9000
+
+            # Keycloak
+            - name: KEYCLOAK_INTERNAL
+              value: http://keycloak-service:8080
+            - name: KEYCLOAK_EXTERNAL
+              value: http://localhost:8080
+            - name: REALM
+              value: bookstore
+            - name: CLIENT_ID
+              value: book-store
+            - name: REDIRECT_URI
+              value: http://localhost:8090/callback
+
+          ports:
+            - containerPort: 5000
+
+          volumeMounts:
+            - name: app-code
+              mountPath: /app
+
+      volumes:
         - name: app-code
-          mountPath: /app
-  volumes:
-    - name: app-code
-      configMap:
-        name: web-app
+          configMap:
+            name: web-app
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service
+  namespace: bookstore
+spec:
+  selector:
+    app: web
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 5000
+      nodePort: 30081
