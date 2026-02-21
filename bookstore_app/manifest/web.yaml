@@ -41,7 +41,7 @@ spec:
 
             # MinIO
             - name: MINIO_ENDPOINT
-              value: http://minio-service:9000
+              value:  http://localhost:9000
 
             # Keycloak
             - name: KEYCLOAK_INTERNAL
@@ -76,8 +76,6 @@ metadata:
 spec:
   selector:
     app: web
-  type: NodePort
   ports:
     - port: 80
       targetPort: 5000
-      nodePort: 30081
